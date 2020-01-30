@@ -1,0 +1,22 @@
+language: generic 
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t cernel/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true USERNAME/react-test npm test
+
+after_success:
+    - docker build -t cernel/multi-client ./client
+    - docker build -t cernel/multi-nginix ./nginix
+    - docker build -t cernel/multi-server ./server
+    - docker build -t cernel/multi-worker ./worker
+    #Log in to the docker CLI
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push cernel/multi-client
+    - docker push cernel/multi-nginix
+    - docker push cernel/multi-server
+    - docker push cernel/multi-worker
